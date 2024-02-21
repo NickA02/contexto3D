@@ -3,7 +3,6 @@ import os
 from static_files import StaticFileMiddleware
 from word_vectors import Word
 import word_vectors
-import requests
 from httpx import AsyncClient
 
 app = FastAPI()
@@ -12,10 +11,15 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-@app.get("/api/get-word")
-async def fetch_word():
+@app.get("/api/giveup/{game_id}")
+async def fetch_word(game_id: int):
+    target_word = await word_vectors.get_target_word(game_id)
+    return {"word": target_word}
+
+@app.get("/api/guess/{game_id}/{word}")
+async def fetch_word(game_id: int, word: str):
     async with AsyncClient() as client:
-        response = await client.get("https://api.contexto.me/machado/en/giveup/520")
+        response = await client.get(f"https://api.contexto.me/machado/en/game/{game_id}/{word}")
         return response.json()
 
 # @app.post("/api/get_word")
