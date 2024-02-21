@@ -3,10 +3,15 @@ import os
 from static_files import StaticFileMiddleware
 from word_vectors import Word
 import word_vectors
+import requests
 
 app = FastAPI()
 
-@app.put("/api/get_word")
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+@app.post("/api/get_word")
 def set_word(word: str) -> Word:
     """Set Word and calculate dictionary of lookup-able words"""
     try:
@@ -14,4 +19,11 @@ def set_word(word: str) -> Word:
     except Exception as e:
         return HTTPException(status_code=502)
 
-app.mount("/", StaticFileMiddleware("../static", "index.html"))
+url = "http://localhost:8000/api/get_word"
+data = {"word": "example"}
+headers = {"Content-Type": "application/json"}
+
+# response = requests.put(url, json=data, headers=headers)
+
+# print(response.status_code)
+# print(response.json())
