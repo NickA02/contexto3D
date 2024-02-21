@@ -1,12 +1,23 @@
-from fastapi import FastAPI, HTTPException
-import os
-from static_files import StaticFileMiddleware
-from word_vectors import Word
+from fastapi import FastAPI
 import word_vectors
-from httpx import AsyncClient
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# Allow requests from frontend
+origins = [
+    "http://localhost:3000",  # React's default development server
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allows specified origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+# Default endpoint
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
