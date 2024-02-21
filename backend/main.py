@@ -18,9 +18,7 @@ async def fetch_word(game_id: int):
 
 @app.get("/api/guess/{game_id}/{word}")
 async def fetch_word(game_id: int, word: str):
-    async with AsyncClient() as client:
-        response = await client.get(f"https://api.contexto.me/machado/en/game/{game_id}/{word}")
-        return response.json()
+    return await word_vectors.get_word_info(game_id, word)
 
 # @app.post("/api/get_word")
 # def set_word(word: str) -> Word:
