@@ -23,10 +23,21 @@ def get_word_vector(word: str):
     return nlp(word).vector
 
 # Example: Project a list of word vectors into 3D
-def project_vectors_3d(vectors):
+async def project_vector_3d(req_vector: str, game_id: int):
     """Transform Word Vector into 3 Dimensions"""
-    # Assuming 'vectors' is a list of high-dimensional vectors
-    return pca.fit_transform(vectors)
+    async with AsyncClient() as client:
+        response = await client.get(f"https://api.contexto.me/machado/en/top/{game_id}")
+        data = response.json()
+    vectors = []
+    for word in data.get("words"):
+        word_vector = get_word_vector(word)
+        vectors.append(word_vector)
+    pca = PCA(n_components=3)  # Assuming 'vectors' is a list of high-dimensional vectors
+    pca.fit(vectors)
+    change_of_basis_matrix = pca.components_.T
+    word_3d = np.dot(req_vector, change_of_basis_matrix)
+    #subtract from the first vector of the original list
+    return 10 * (word_3d - np.dot(vectors[0], change_of_basis_matrix))
 
 async def get_target_word(game_id: int) -> str:
     """Call Contexto API to retrieve today's word based on the game ID."""
@@ -45,14 +56,9 @@ async def get_req_word_contexto(game_id: int, word: str) -> tuple:
 async def get_relative_vector_3d(game_id: int, word: str) -> list:
     """Determine relative vector between request word and target word"""
     target_word = await get_target_word(game_id)
-    target_vector = get_word_vector(target_word)
-
     req_vector = get_word_vector(word)
-
-    relative_vectors_3D = project_vectors_3d([req_vector, target_vector])
-    relative_vector_3D = relative_vectors_3D[0] - relative_vectors_3D[1]
-    
-    return relative_vector_3D
+    vector_3d = await project_vector_3d(req_vector, game_id)
+    return vector_3d
 
 
 
